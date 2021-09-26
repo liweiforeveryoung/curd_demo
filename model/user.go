@@ -1,6 +1,10 @@
 package model
 
-import "math/rand"
+import (
+	"math/rand"
+
+	"github.com/jinzhu/copier"
+)
 
 type Sex int8
 
@@ -25,6 +29,13 @@ type User struct {
 	UpdatedAt int64 `gorm:"column:updated_at;autoUpdateTime" json:"-"`
 }
 
+// DeepCopy 对 User 进行深度拷贝
+func (m *User) DeepCopy() *User {
+	cp := new(User)
+	_ = DeepCopy(cp, m)
+	return cp
+}
+
 func (m *User) TableName() string {
 	return "users"
 }
@@ -40,6 +51,17 @@ func NewUser(req *UserCreateRequest) *User {
 
 func NewUserCreateResponse(user *User) *UserCreateResponse {
 	return &UserCreateResponse{User: user}
+}
+
+func NewUserCreateRequest(user *User) *UserCreateRequest {
+	return &UserCreateRequest{User: user}
+}
+
+func DeepCopy(toValue interface{}, fromValue interface{}) error {
+	return copier.CopyWithOption(toValue, fromValue, copier.Option{
+		IgnoreEmpty: true,
+		DeepCopy:    true,
+	})
 }
 
 type UserCreateRequest struct {
