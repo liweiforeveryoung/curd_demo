@@ -1,4 +1,4 @@
-package main
+package apis
 
 import (
 	"bytes"
@@ -20,18 +20,6 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
-
-func TestHello(t *testing.T) {
-	g := gin.Default()
-	SetUpRoutes(g)
-
-	req := httptest.NewRequest("GET", "/hello", nil)
-	w := httptest.NewRecorder()
-	g.ServeHTTP(w, req)
-
-	resp := w.Result()
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
-}
 
 func initDB() {
 	config.Initialize()
