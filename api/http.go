@@ -1,4 +1,4 @@
-package apis
+package api
 
 import (
 	"curd_demo/config"

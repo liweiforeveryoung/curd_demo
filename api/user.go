@@ -1,4 +1,4 @@
-package apis
+package api
 
 import (
 	"context"
@@ -36,9 +36,9 @@ type UserEntry struct {
 	db *gorm.DB
 }
 
-func (u *UserEntry) Create(ctx context.Context, req *model.UserCreateRequest) (*model.UserCreateResponse, error) {
+func (entry *UserEntry) Create(ctx context.Context, req *model.UserCreateRequest) (*model.UserCreateResponse, error) {
 	user := model.NewUser(req)
-	err := db.WithContext(ctx).Create(user).Error
+	err := entry.db.WithContext(ctx).Create(user).Error
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
