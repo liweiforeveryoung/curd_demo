@@ -1,11 +1,14 @@
 package util
 
 import (
+	"fmt"
 	"math/rand"
 	"os"
 	"strings"
 
+	"github.com/mitchellh/mapstructure"
 	"github.com/pkg/errors"
+	"github.com/spf13/viper"
 )
 
 func RandomString(length int) string {
@@ -23,9 +26,9 @@ func RandomString(length int) string {
 	return string(res)
 }
 
-// DirOrFilePathFromProject 从项目根路径开始寻找 dir/file, 返回完整的 path
+// DirOrFileAbsolutePathFromProject 从项目根路径开始寻找 dir/file, 返回完整的 path
 // file 如果有后缀, 需要带上
-func DirOrFilePathFromProject(projectName, dirOrFileName string) (string, error) {
+func DirOrFileAbsolutePathFromProject(projectName, dirOrFileName string) (string, error) {
 	wd, err := os.Getwd()
 	if err != nil {
 		return "", errors.WithStack(err)
@@ -86,4 +89,27 @@ func FileNamesInDir(dirPath string) ([]string, error) {
 		dirs = dirs[1:]
 	}
 	return fileNames, nil
+}
+
+// BindYamlConfig 负责根据 yaml config file unmarshal 出 struct
+// cfgFileName shouldn't contain file type suffix
+func BindYamlConfig(cfgBaseDir, cfgFileName string, cfgObjPtr interface{}) error {
+	vp := viper.New()
+	// jww.SetStdoutThreshold(jww.LevelInfo) 开启 viper 的日志
+	vp.AddConfigPath(cfgBaseDir)
+	vp.SetConfigName(cfgFileName)
+	vp.SetConfigType("yaml")
+
+	err := vp.ReadInConfig()
+	if err != nil {
+		return fmt.Errorf("ReadInConfig(),err[%w]", err)
+	}
+	if err = vp.Unmarshal(cfgObjPtr, func(config *mapstructure.DecoderConfig) {
+		config.TagName = "yaml"
+		// 不能多出不用的配置项
+		config.ErrorUnused = true
+	}); err != nil {
+		return fmt.Errorf("unmarshal(),err[%w]", err)
+	}
+	return nil
 }

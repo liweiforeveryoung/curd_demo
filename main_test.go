@@ -10,6 +10,7 @@ import (
 	"os"
 	"testing"
 
+	"curd_demo/config"
 	"curd_demo/model"
 	"curd_demo/util"
 	"github.com/gin-gonic/gin"
@@ -32,14 +33,9 @@ func TestHello(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 }
 
-const ProjectName = "curd_demo"
-
 func initDB() {
-	// 当 clientFoundRows 为 true, db.Update().RowsAffected 返回的是匹配到的记录行数
-	// 当 clientFoundRows 为 false, db.Update().RowsAffected 返回的是实际更新的记录行数
-	dsn := "root:@tcp(127.0.0.1:3306)/curd_db_test?charset=utf8mb4&parseTime=True&loc=Local&clientFoundRows=true"
-
-	dsnCfg, err := gomysql.ParseDSN(dsn)
+	config.Initialize()
+	dsnCfg, err := gomysql.ParseDSN(config.Hub.DBSetting.MysqlDSN)
 	if err != nil {
 		panic(err)
 	}
@@ -56,7 +52,7 @@ func initDB() {
 	drop := fmt.Sprintf("DROP DATABASE IF EXISTS %s;", dbName)
 	create := fmt.Sprintf("CREATE DATABASE %s DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;", dbName)
 	use := fmt.Sprintf(`USE %s;`, dbName)
-	migrations := LoadMysqlPath("migrations")
+	migrations := FolderContentLoad(config.MigrationsFolderName)
 	err = db.Exec(drop).Exec(create).Exec(use).Error
 	if err != nil {
 		panic(err)
@@ -117,9 +113,9 @@ func BindResp(resp *http.Response, obj interface{}) error {
 	return nil
 }
 
-// LoadMysqlPath 将 dirName 每个文件中的 content 以 string 的形式 load 出来
-func LoadMysqlPath(dirName string) []string {
-	dirPath, err := util.DirOrFilePathFromProject(ProjectName, dirName)
+// FolderContentLoad 将 folder 里面每个文件中的 content 以 string 的形式 load 出来
+func FolderContentLoad(folderName string) []string {
+	dirPath, err := util.DirOrFileAbsolutePathFromProject(config.ProjectName, folderName)
 	if err != nil {
 		panic(err)
 	}
@@ -127,23 +123,23 @@ func LoadMysqlPath(dirName string) []string {
 	if err != nil {
 		panic(err)
 	}
-	return LoadMysqlFiles(fileNames)
+	return FilesContentLoad(fileNames)
 }
 
-func LoadMysqlFiles(sqlFileNames []string) []string {
-	contents := make([]string, 0, len(sqlFileNames))
-	for _, name := range sqlFileNames {
-		contents = append(contents, LoadMysqlFile(name))
+func FilesContentLoad(fileNames []string) []string {
+	contents := make([]string, 0, len(fileNames))
+	for _, name := range fileNames {
+		contents = append(contents, FileContentLoad(name))
 	}
 	return contents
 }
 
-func LoadMysqlFile(sqlFileName string) string {
-	sqlFilePath, err := util.DirOrFilePathFromProject(ProjectName, sqlFileName)
+func FileContentLoad(fileName string) string {
+	absoluteFilePath, err := util.DirOrFileAbsolutePathFromProject(config.ProjectName, fileName)
 	if err != nil {
 		panic(err)
 	}
-	content, err := os.ReadFile(sqlFilePath)
+	content, err := os.ReadFile(absoluteFilePath)
 	if err != nil {
 		panic(err)
 	}

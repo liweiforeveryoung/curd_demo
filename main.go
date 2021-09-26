@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"curd_demo/config"
 	"curd_demo/model"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
@@ -14,16 +15,16 @@ import (
 var db *gorm.DB
 
 func main() {
+	config.Initialize()
 	var err error
-	dsn := "root:@tcp(127.0.0.1:3306)/curd_db?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err = gorm.Open(mysql.Open(config.Hub.DBSetting.MysqlDSN), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
 	rand.Seed(time.Now().Unix())
 	engine := gin.Default()
 	SetUpRoutes(engine)
-	err = engine.Run(":3344")
+	err = engine.Run(config.Hub.HttpSetting.Addr)
 	if err != nil {
 		panic(err)
 	}

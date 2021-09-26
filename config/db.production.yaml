@@ -1,0 +1,3 @@
+# 当 clientFoundRows 为 true, db.Update().RowsAffected 返回的是匹配到的记录行数
+# 当 clientFoundRows 为 false, db.Update().RowsAffected 返回的是实际更新的记录行数
+mysql_dsn: "root:@tcp(127.0.0.1:3306)/curd_db?charset=utf8mb4&parseTime=True&loc=Local&clientFoundRows=true"
