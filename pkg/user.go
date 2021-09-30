@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
+//go:generate mockgen -destination user_mock.go -package pkg -source user.go User
 type User interface {
 	Create(ctx context.Context, req *model.UserCreateRequest) (*model.UserCreateResponse, error)
 }

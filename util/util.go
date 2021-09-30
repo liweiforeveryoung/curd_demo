@@ -1,8 +1,11 @@
 package util
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
+	"net/http"
 	"os"
 	"strings"
 
@@ -145,4 +148,17 @@ func FileContentLoad(projectName, fileName string) string {
 		panic(err)
 	}
 	return string(content)
+}
+
+func BindResp(resp *http.Response, obj interface{}) error {
+	defer resp.Body.Close()
+	content, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("ReadAll err[%w]", err)
+	}
+	err = json.Unmarshal(content, obj)
+	if err != nil {
+		return fmt.Errorf("unmarshal err[%w]", err)
+	}
+	return nil
 }
