@@ -113,3 +113,36 @@ func BindYamlConfig(cfgBaseDir, cfgFileName string, cfgObjPtr interface{}) error
 	}
 	return nil
 }
+
+// FolderContentLoad 将 folder 里面每个文件中的 content 以 string 的形式 load 出来
+func FolderContentLoad(projectName, folderName string) []string {
+	dirPath, err := DirOrFileAbsolutePathFromProject(projectName, folderName)
+	if err != nil {
+		panic(err)
+	}
+	fileNames, err := FileNamesInDir(dirPath)
+	if err != nil {
+		panic(err)
+	}
+	return FilesContentLoad(projectName, fileNames)
+}
+
+func FilesContentLoad(projectName string, fileNames []string) []string {
+	contents := make([]string, 0, len(fileNames))
+	for _, fileName := range fileNames {
+		contents = append(contents, FileContentLoad(projectName, fileName))
+	}
+	return contents
+}
+
+func FileContentLoad(projectName, fileName string) string {
+	absoluteFilePath, err := DirOrFileAbsolutePathFromProject(projectName, fileName)
+	if err != nil {
+		panic(err)
+	}
+	content, err := os.ReadFile(absoluteFilePath)
+	if err != nil {
+		panic(err)
+	}
+	return string(content)
+}
