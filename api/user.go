@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
+	"curd_demo/dep"
 	"curd_demo/model"
-	"curd_demo/pkg"
 	"github.com/gin-gonic/gin"
 )
 
@@ -15,7 +15,7 @@ func UserCreate(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, err)
 		return
 	}
-	resp, err := pkg.NewUser(db).Create(ctx, req)
+	resp, err := dep.Hub.User.Create(ctx, req)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 	}

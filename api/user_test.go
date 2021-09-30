@@ -11,7 +11,9 @@ import (
 	"testing"
 
 	"curd_demo/config"
+	"curd_demo/dep"
 	"curd_demo/model"
+	"curd_demo/pkg"
 	"curd_demo/util"
 	"github.com/gin-gonic/gin"
 	gomysql "github.com/go-sql-driver/mysql"
@@ -31,7 +33,7 @@ func initDB() {
 	// 在 dsn 中不指定 dbname
 	dsnCfg.DBName = ""
 
-	db, err = gorm.Open(mysql.Open(dsnCfg.FormatDSN()), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsnCfg.FormatDSN()), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
@@ -51,6 +53,8 @@ func initDB() {
 			panic(err)
 		}
 	}
+	dep.Hub.DB = db
+	dep.Hub.User = pkg.NewUser(db)
 }
 
 func TestUserCreate(t *testing.T) {
@@ -83,7 +87,7 @@ func TestUserCreate(t *testing.T) {
 	assert.Equal(t, user.Sex, userCreateResp.User.Sex)
 	// 检查数据库
 	userFromDB := user.DeepCopy()
-	err = db.First(userFromDB, user).Error
+	err = dep.Hub.DB.First(userFromDB, user).Error
 	assert.NoError(t, err)
 	assert.NotEqual(t, int64(0), userFromDB.UserId)
 }
