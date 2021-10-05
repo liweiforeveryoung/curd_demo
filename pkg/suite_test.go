@@ -46,13 +46,14 @@ func (s *SuiteTest) SetupSuite() {
 	drop := fmt.Sprintf("DROP DATABASE IF EXISTS %s;", dbName)
 	create := fmt.Sprintf("CREATE DATABASE %s DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;", dbName)
 	use := fmt.Sprintf(`USE %s;`, dbName)
-	migrations := util.FolderContentLoad(config.ProjectName, config.MigrationsFolderName)
+	folder, err := util.LoadFolderUnderProject(config.ProjectName, config.MigrationsFolderName)
+	s.NoError(err)
 	err = db.Exec(drop).Exec(create).Exec(use).Error
 	if err != nil {
 		panic(err)
 	}
-	for _, migrate := range migrations {
-		err = db.Exec(migrate).Error
+	for _, fileContent := range folder.AllFiles().Contents() {
+		err = db.Exec(fileContent).Error
 		if err != nil {
 			panic(err)
 		}

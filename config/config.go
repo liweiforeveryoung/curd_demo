@@ -25,11 +25,11 @@ func Initialize() {
 }
 
 var CfgAbsolutePath = func() string {
-	dir, err := util.DirOrFileAbsolutePathFromProject(ProjectName, CfgFolderName)
+	folder, err := util.LoadFolderUnderProject(ProjectName, CfgFolderName)
 	if err != nil {
 		panic(err)
 	}
-	return dir
+	return folder.AbsolutePath
 }()
 
 type DBSetting struct {

@@ -29,77 +29,186 @@ func RandomString(length int) string {
 	return string(res)
 }
 
-// DirOrFileAbsolutePathFromProject 从项目根路径开始寻找 dir/file, 返回完整的 path
-// file 如果有后缀, 需要带上
-func DirOrFileAbsolutePathFromProject(projectName, dirOrFileName string) (string, error) {
+// File 表示 文件
+type File struct {
+	// 完整路径(包含 Name)
+	AbsolutePath string
+	// 文件名字(包含后缀)
+	Name string
+	// 内容
+	Content []byte
+}
+
+// Folder 表示文件夹
+type Folder struct {
+	// 完整路径(包含 Name)
+	AbsolutePath string
+	// 文件夹的名字
+	Name string
+	// 文件夹下面的子文件夹
+	SubFolders []*Folder
+	// 文件夹下面的文件
+	Files []*File
+}
+
+type FileSlice []*File
+
+func (slice FileSlice) Names() []string {
+	names := make([]string, 0, len(slice))
+	for _, file := range slice {
+		names = append(names, file.Name)
+	}
+	return names
+}
+
+func (slice FileSlice) Contents() []string {
+	contents := make([]string, 0, len(slice))
+	for _, file := range slice {
+		contents = append(contents, string(file.Content))
+	}
+	return contents
+}
+
+// AllFiles 返回文件夹下面的所有文件
+func (m *Folder) AllFiles() FileSlice {
+	files := make(FileSlice, 0, 0)
+	files = append(files, m.Files...)
+	for _, folder := range m.SubFolders {
+		files = append(files, folder.AllFiles()...)
+	}
+	return files
+}
+
+// FindFile 根据文件名查找该文件夹下面的问题, 如果没有找到将会返回 nil
+func (m *Folder) FindFile(fileName string) *File {
+	for _, file := range m.Files {
+		if file.Name == fileName {
+			return file
+		}
+	}
+	for _, folder := range m.SubFolders {
+		if file := folder.FindFile(fileName); file != nil {
+			return file
+		}
+	}
+	return nil
+}
+
+// FindFolder 根据文件夹名查找文件夹, 如果没有找到将会返回 nil
+func (m *Folder) FindFolder(folderName string) *Folder {
+	if m.Name == folderName {
+		return m
+	}
+	for _, subFolder := range m.SubFolders {
+		if folder := subFolder.FindFolder(folderName); folder != nil {
+			return folder
+		}
+	}
+	return nil
+}
+
+func newFolder(absolutePathOfFolder string) *Folder {
+	folder := new(Folder)
+	folder.AbsolutePath = absolutePathOfFolder
+	idx := strings.LastIndex(absolutePathOfFolder, string(os.PathSeparator))
+	folder.Name = absolutePathOfFolder[idx+1:]
+	return folder
+}
+
+func newFile(absolutePathOfFile string) *File {
+	file := new(File)
+	file.AbsolutePath = absolutePathOfFile
+	idx := strings.LastIndex(absolutePathOfFile, string(os.PathSeparator))
+	file.Name = absolutePathOfFile[idx+1:]
+	return file
+}
+
+func (m *Folder) apply() error {
+	entries, err := os.ReadDir(m.AbsolutePath)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	for _, entry := range entries {
+		absolutePath := ConcatPath(m.AbsolutePath, entry.Name())
+		if entry.IsDir() {
+			subFolder := newFolder(absolutePath)
+			if err := subFolder.apply(); err != nil {
+				return errors.WithStack(err)
+			}
+			m.SubFolders = append(m.SubFolders, subFolder)
+		} else {
+			file := newFile(absolutePath)
+			if err := file.apply(); err != nil {
+				return errors.WithStack(err)
+			}
+			m.Files = append(m.Files, file)
+		}
+	}
+	return nil
+}
+
+func (m *File) apply() error {
+	content, err := os.ReadFile(m.AbsolutePath)
+	if err != nil {
+		return errors.WithStack(err)
+	}
+	m.Content = content
+	return nil
+}
+
+// LoadFolder 根据文件夹的绝对路径 load 出一个文件夹
+// 如果文件夹不存在, 将会返回一个 error
+func LoadFolder(absolutePathOfFolder string) (*Folder, error) {
+	folder := newFolder(absolutePathOfFolder)
+	err := folder.apply()
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
+	return folder, nil
+}
+
+// AbsolutePathOfCurProject 获取当前项目的绝对路径
+// projectName 必须在当前的 working directory 下面
+func AbsolutePathOfCurProject(projectName string) (string, error) {
 	wd, err := os.Getwd()
 	if err != nil {
 		return "", errors.WithStack(err)
 	}
-	// 在 learn_ci 下面找到 config 目录
-	index := strings.LastIndex(wd, projectName)
-	rootPath := wd[:index+len(projectName)]
-	path, err := FindDirOrFileNameFullPath([]string{rootPath}, dirOrFileName)
+	return absolutePathOfCurProject(projectName, wd)
+}
+
+func absolutePathOfCurProject(projectName, wd string) (string, error) {
+	idx := strings.LastIndex(wd, projectName)
+	if idx == -1 {
+		return "", errors.Errorf("can't find project name[%s] in wd[%s]", projectName, wd)
+	}
+	return wd[:idx+len(projectName)], nil
+}
+
+// LoadFolderUnderProject 从项目根路径开始寻找 folder, 返回 folder 对象, 如果找不到, nil 将非空
+func LoadFolderUnderProject(projectName, folderName string) (*Folder, error) {
+	absolutePath, err := AbsolutePathOfCurProject(projectName)
 	if err != nil {
-		return "", errors.WithStack(err)
+		return nil, errors.WithStack(err)
 	}
-	return path, nil
-}
+	folder, err := LoadFolder(absolutePath)
+	if err != nil {
+		return nil, errors.WithStack(err)
+	}
 
-// FindDirOrFileNameFullPath 从 parentPaths 开始往下面查询查找 dir/file 的完整路径名
-// 如果没有找到, 将会返回 error
-func FindDirOrFileNameFullPath(parentPaths []string, dirOrFileName string) (string, error) {
-	if len(parentPaths) == 0 {
-		return "", errors.Errorf("can't find dirOrFileName: %s", dirOrFileName)
+	if dst := folder.FindFolder(folderName); dst != nil {
+		return dst, nil
 	}
-	nextParentPaths := make([]string, 0, 0)
-	for _, parentPath := range parentPaths {
-		entries, err := os.ReadDir(parentPath)
-		if err != nil {
-			return "", errors.WithStack(err)
-		}
-		for _, entry := range entries {
-			path := strings.Join([]string{parentPath, entry.Name()}, string(os.PathSeparator))
-			if entry.Name() == dirOrFileName {
-				return path, nil
-			}
-			if entry.IsDir() {
-				nextParentPaths = append(nextParentPaths, path)
-			}
-		}
-	}
-	return FindDirOrFileNameFullPath(nextParentPaths, dirOrFileName)
-}
 
-// FileNamesInDir 返回 dir 下面所有的文件名字 (不包括路径)
-func FileNamesInDir(dirPath string) ([]string, error) {
-	dirs := []string{dirPath}
-	fileNames := make([]string, 0, 0)
-	for len(dirs) != 0 {
-		dir := dirs[0]
-		entries, err := os.ReadDir(dir)
-		if err != nil {
-			return nil, errors.WithStack(err)
-		}
-		for _, entry := range entries {
-			path := strings.Join([]string{dir, entry.Name()}, string(os.PathSeparator))
-			if entry.IsDir() {
-				dirs = append(dirs, path)
-			} else {
-				fileNames = append(fileNames, entry.Name())
-			}
-		}
-		dirs = dirs[1:]
-	}
-	return fileNames, nil
+	return nil, errors.New("can't find")
 }
 
 // BindYamlConfig 负责根据 yaml config file unmarshal 出 struct
-// cfgFileName shouldn't contain file type suffix
 func BindYamlConfig(cfgBaseDir, cfgFileName string, cfgObjPtr interface{}) error {
 	vp := viper.New()
 	// jww.SetStdoutThreshold(jww.LevelInfo) 开启 viper 的日志
 	vp.AddConfigPath(cfgBaseDir)
+	cfgFileName = strings.TrimSuffix(cfgFileName, ".yaml")
 	vp.SetConfigName(cfgFileName)
 	vp.SetConfigType("yaml")
 
@@ -117,39 +226,6 @@ func BindYamlConfig(cfgBaseDir, cfgFileName string, cfgObjPtr interface{}) error
 	return nil
 }
 
-// FolderContentLoad 将 folder 里面每个文件中的 content 以 string 的形式 load 出来
-func FolderContentLoad(projectName, folderName string) []string {
-	dirPath, err := DirOrFileAbsolutePathFromProject(projectName, folderName)
-	if err != nil {
-		panic(err)
-	}
-	fileNames, err := FileNamesInDir(dirPath)
-	if err != nil {
-		panic(err)
-	}
-	return FilesContentLoad(projectName, fileNames)
-}
-
-func FilesContentLoad(projectName string, fileNames []string) []string {
-	contents := make([]string, 0, len(fileNames))
-	for _, fileName := range fileNames {
-		contents = append(contents, FileContentLoad(projectName, fileName))
-	}
-	return contents
-}
-
-func FileContentLoad(projectName, fileName string) string {
-	absoluteFilePath, err := DirOrFileAbsolutePathFromProject(projectName, fileName)
-	if err != nil {
-		panic(err)
-	}
-	content, err := os.ReadFile(absoluteFilePath)
-	if err != nil {
-		panic(err)
-	}
-	return string(content)
-}
-
 func BindResp(resp *http.Response, obj interface{}) error {
 	defer resp.Body.Close()
 	content, err := ioutil.ReadAll(resp.Body)
@@ -161,4 +237,8 @@ func BindResp(resp *http.Response, obj interface{}) error {
 		return fmt.Errorf("unmarshal err[%w]", err)
 	}
 	return nil
+}
+
+func ConcatPath(paths ...string) string {
+	return strings.Join(paths, string(os.PathSeparator))
 }
