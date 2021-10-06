@@ -1,11 +1,11 @@
 package pkg
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
 	"curd_demo/config"
-	"curd_demo/util"
 	gomysql "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/driver/mysql"
@@ -15,7 +15,7 @@ import (
 
 type SuiteTest struct {
 	suite.Suite
-	db        *gorm.DB
+	db        *DBEntry
 	userEntry *UserEntry
 }
 
@@ -46,20 +46,14 @@ func (s *SuiteTest) SetupSuite() {
 	drop := fmt.Sprintf("DROP DATABASE IF EXISTS %s;", dbName)
 	create := fmt.Sprintf("CREATE DATABASE %s DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;", dbName)
 	use := fmt.Sprintf(`USE %s;`, dbName)
-	folder, err := util.LoadFolderUnderProject(config.ProjectName, config.MigrationsFolderName)
-	s.NoError(err)
 	err = db.Exec(drop).Exec(create).Exec(use).Error
 	if err != nil {
 		panic(err)
 	}
-	for _, fileContent := range folder.AllFiles().Contents() {
-		err = db.Exec(fileContent).Error
-		if err != nil {
-			panic(err)
-		}
-	}
-	s.db = db
-	s.userEntry = &UserEntry{db: db}
+	s.db = &DBEntry{DB: db}
+	err = s.db.Migrate(context.Background())
+	s.Require().NoError(err)
+	s.userEntry = &UserEntry{DB: db}
 }
 
 // TearDownAllSuite has a TearDownSuite method, which will run after

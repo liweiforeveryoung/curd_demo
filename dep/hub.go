@@ -12,8 +12,8 @@ var Hub hub
 
 type hub struct {
 	dig.In
-	DB   *gorm.DB
 	User pkg.User
+	DB   pkg.DB
 }
 
 var diContainer = dig.New()
@@ -25,6 +25,7 @@ func NewGormDB() (*gorm.DB, error) {
 func Prepare() {
 	_ = diContainer.Provide(NewGormDB)
 	_ = diContainer.Provide(pkg.NewUser)
+	_ = diContainer.Provide(pkg.NewDB)
 
 	err := diContainer.Invoke(func(h hub) {
 		Hub = h

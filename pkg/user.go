@@ -5,6 +5,7 @@ import (
 
 	"curd_demo/model"
 	"github.com/pkg/errors"
+	"go.uber.org/dig"
 	"gorm.io/gorm"
 )
 
@@ -13,17 +14,18 @@ type User interface {
 	Create(ctx context.Context, req *model.UserCreateRequest) (*model.UserCreateResponse, error)
 }
 
-func NewUser(db *gorm.DB) User {
-	return &UserEntry{db: db}
+func NewUser(entry UserEntry) User {
+	return &entry
 }
 
 type UserEntry struct {
-	db *gorm.DB
+	dig.In
+	DB *gorm.DB
 }
 
 func (entry *UserEntry) Create(ctx context.Context, req *model.UserCreateRequest) (*model.UserCreateResponse, error) {
 	user := model.NewUser(req)
-	err := entry.db.WithContext(ctx).Create(user).Error
+	err := entry.DB.WithContext(ctx).Create(user).Error
 	if err != nil {
 		return nil, errors.WithStack(err)
 	}
