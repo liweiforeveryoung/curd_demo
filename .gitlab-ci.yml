@@ -1,0 +1,27 @@
+build:
+  stage: build
+  image: golang:1.16
+  script:
+    - make build
+  artifacts:
+    paths:
+      - "./"
+  tags:
+    - docker
+
+test:
+  stage: test
+  image: golang:1.16
+  services:
+    - name: mysql:5.7
+#      entrypoint: [ "docker-entrypoint.sh" ]
+#      command: [ "mysqld" ]
+  before_script:
+    - echo 'wait for mysql, sleep 5s zzz'
+    - sleep 5
+  script:
+    - make test
+  variables:
+    MYSQL_ALLOW_EMPTY_PASSWORD: "yes" # 这个环境变量会传递到 mysql 镜像
+  tags:
+    - docker  # 这个 tag 是公司的 gitlab runner 要求的, 如果没有 tag 的话, 公司的 runner 就不会执行这个 CI job
