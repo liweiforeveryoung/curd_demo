@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"curd_demo/util"
+	"github.com/liweiforeveryoung/curd_demo/util"
 )
 
 const (

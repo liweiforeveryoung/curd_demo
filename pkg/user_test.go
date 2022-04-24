@@ -2,8 +2,7 @@ package pkg
 
 import (
 	"context"
-
-	"curd_demo/model"
+	"github.com/liweiforeveryoung/curd_demo/model"
 )
 
 func (s *SuiteTest) TestUserEntry_Create() {

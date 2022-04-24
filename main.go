@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "curd_demo/cmd"
+import "github.com/liweiforeveryoung/curd_demo/cmd"
 
 func main() {
 	cmd.Execute()

@@ -1,10 +1,9 @@
 package model
 
 import (
+	"github.com/liweiforeveryoung/curd_demo/util"
 	"reflect"
 	"testing"
-
-	"curd_demo/util"
 )
 
 func TestMigrationSlice_GroupByFileName(t *testing.T) {

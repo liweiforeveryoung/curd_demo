@@ -800,8 +800,8 @@ db 作为一个被各个上层业务调用的工具人，毫无疑问应该在�
 package dep
 
 import (
-   "curd_demo/config"
-   "curd_demo/pkg"
+   "github.com/liweiforeveryoung/curd_democonfig"
+   "github.com/liweiforeveryoung/curd_demopkg"
    "gorm.io/driver/mysql"
    "gorm.io/gorm"
 )
@@ -829,9 +829,9 @@ import (
 	"math/rand"
 	"time"
 
-	"curd_demo/api"
-	"curd_demo/config"
-	"curd_demo/dep"
+	"github.com/liweiforeveryoung/curd_demoapi"
+	"github.com/liweiforeveryoung/curd_democonfig"
+	"github.com/liweiforeveryoung/curd_demodep"
 )
 
 func main() {
@@ -953,9 +953,9 @@ import (
 	"fmt"
 	"testing"
 
-	"curd_demo/config"
-	"curd_demo/model"
-	"curd_demo/util"
+	"github.com/liweiforeveryoung/curd_democonfig"
+	"github.com/liweiforeveryoung/curd_demomodel"
+	"github.com/liweiforeveryoung/curd_demoutil"
 	gomysql "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/driver/mysql"
@@ -1599,8 +1599,8 @@ import (
 	"math/rand"
 	"time"
 
-	"curd_demo/config"
-	"curd_demo/dep"
+	"github.com/liweiforeveryoung/curd_democonfig"
+	"github.com/liweiforeveryoung/curd_demodep"
 	"github.com/spf13/cobra"
 )
 
@@ -1631,7 +1631,7 @@ func initialize() {
 package cmd
 
 import (
-	"curd_demo/api"
+	"github.com/liweiforeveryoung/curd_demoapi"
 	"github.com/spf13/cobra"
 )
 
@@ -1652,7 +1652,7 @@ import (
 	"context"
 	"time"
 
-	"curd_demo/dep"
+	"github.com/liweiforeveryoung/curd_demodep"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -1681,7 +1681,7 @@ var migrateCommand = cobra.Command{
 // main
 package main
 
-import "curd_demo/cmd"
+import "github.com/liweiforeveryoung/curd_democmd"
 
 func main() {
 	cmd.Execute()

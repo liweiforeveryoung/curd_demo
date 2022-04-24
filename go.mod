@@ -1,4 +1,4 @@
-module curd_demo
+module github.com/liweiforeveryoung/curd_demo
 
 go 1.16
 

@@ -1,8 +1,6 @@
 package model
 
-import (
-	"curd_demo/util"
-)
+import "github.com/liweiforeveryoung/curd_demo/util"
 
 type MigrationSlice []*Migration
 

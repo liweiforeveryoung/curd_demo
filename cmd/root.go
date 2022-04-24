@@ -1,11 +1,11 @@
 package cmd
 
 import (
+	"github.com/liweiforeveryoung/curd_demo/config"
+	"github.com/liweiforeveryoung/curd_demo/dep"
 	"math/rand"
 	"time"
 
-	"curd_demo/config"
-	"curd_demo/dep"
 	"github.com/spf13/cobra"
 )
 

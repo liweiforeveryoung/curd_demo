@@ -3,10 +3,10 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/liweiforeveryoung/curd_demo/model"
 	"net/http"
 	"net/http/httptest"
 
-	"curd_demo/model"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
 )

@@ -2,9 +2,9 @@ package cmd
 
 import (
 	"context"
+	"github.com/liweiforeveryoung/curd_demo/dep"
 	"time"
 
-	"curd_demo/dep"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"

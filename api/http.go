@@ -1,10 +1,11 @@
 package api
 
 import (
-	"curd_demo/config"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"github.com/liweiforeveryoung/curd_demo/config"
 )
 
 func StartHttpService() error {

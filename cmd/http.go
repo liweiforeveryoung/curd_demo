@@ -1,8 +1,9 @@
 package cmd
 
 import (
-	"curd_demo/api"
 	"github.com/spf13/cobra"
+
+	"github.com/liweiforeveryoung/curd_demo/api"
 )
 
 var httpCommand = cobra.Command{

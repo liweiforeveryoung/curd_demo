@@ -1,8 +1,8 @@
 package dep
 
 import (
-	"curd_demo/config"
-	"curd_demo/pkg"
+	"github.com/liweiforeveryoung/curd_demo/config"
+	"github.com/liweiforeveryoung/curd_demo/pkg"
 	"go.uber.org/dig"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"

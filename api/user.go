@@ -1,10 +1,10 @@
 package api
 
 import (
+	"github.com/liweiforeveryoung/curd_demo/dep"
+	"github.com/liweiforeveryoung/curd_demo/model"
 	"net/http"
 
-	"curd_demo/dep"
-	"curd_demo/model"
 	"github.com/gin-gonic/gin"
 )
 

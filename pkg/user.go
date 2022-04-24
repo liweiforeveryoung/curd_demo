@@ -2,8 +2,8 @@ package pkg
 
 import (
 	"context"
+	"github.com/liweiforeveryoung/curd_demo/model"
 
-	"curd_demo/model"
 	"github.com/pkg/errors"
 	"go.uber.org/dig"
 	"gorm.io/gorm"

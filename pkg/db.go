@@ -3,12 +3,13 @@ package pkg
 import (
 	"context"
 
-	"curd_demo/config"
-	"curd_demo/model"
-	"curd_demo/util"
 	"github.com/pkg/errors"
 	"go.uber.org/dig"
 	"gorm.io/gorm"
+
+	"github.com/liweiforeveryoung/curd_demo/config"
+	"github.com/liweiforeveryoung/curd_demo/model"
+	"github.com/liweiforeveryoung/curd_demo/util"
 )
 
 type DB interface {
@@ -25,7 +26,6 @@ type DBEntry struct {
 }
 
 func (entry *DBEntry) Migrate(ctx context.Context) error {
-	entry.DB = entry.Debug()
 	err := entry.WithContext(ctx).Exec(new(model.Migration).SQL()).Error
 	if err != nil {
 		return errors.WithStack(err)

@@ -1,11 +1,11 @@
 package api
 
 import (
+	"github.com/liweiforeveryoung/curd_demo/config"
+	"github.com/liweiforeveryoung/curd_demo/dep"
+	"github.com/liweiforeveryoung/curd_demo/pkg"
 	"testing"
 
-	"curd_demo/config"
-	"curd_demo/dep"
-	"curd_demo/pkg"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/suite"
 )

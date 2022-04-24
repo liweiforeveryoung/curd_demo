@@ -3,9 +3,9 @@ package pkg
 import (
 	"context"
 	"fmt"
+	"github.com/liweiforeveryoung/curd_demo/config"
 	"testing"
 
-	"curd_demo/config"
 	gomysql "github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/driver/mysql"
